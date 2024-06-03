@@ -42,27 +42,27 @@ class Core(object):
         if len(cmd) == 2:
             payload['parameter'] = cmd[1]
 
-        self.conn.send(json.dumps(payload))
+        self.conn.send(json.dumps(payload).encode())
         payload = self.read_response()
         try:
             response = json.loads(payload)
         except ValueError:
-            response = payload# Assume downstream code knows what to do.
+            response = payload  # Assume downstream code knows what to do.
 
         self.close()
         return response
 
     def read_response(self):
-	done = False
-	buf = self.conn.recv(4096)
-	while done is False:
+        done = False
+        buf = self.conn.recv(4096)
+        while not done:
             more = self.conn.recv(4096)
             if not more:
                 done = True
             else:
                 buf += more
 
-        return buf.replace('\x00','')
+        return buf.replace(b'\x00', b'').decode()
 
     def command(self, *args):
         """
